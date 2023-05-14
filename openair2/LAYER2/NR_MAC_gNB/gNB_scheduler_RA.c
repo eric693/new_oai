@@ -27,6 +27,8 @@
  * \version
  */
 
+
+#include <Python.h>
 #include "platform_types.h"
 
 /* MAC */
@@ -2068,12 +2070,24 @@ void nr_check_Msg4_Ack(module_id_t module_id, int CC_id, frame_t frame, sub_fram
   LOG_D(NR_MAC, "ue rnti 0x%04x, harq is waiting %d, round %d, frame %d %d, harq id %d\n", ra->rnti, harq->is_waiting, harq->round, frame, slot, current_harq_pid);
 
   if (harq->is_waiting == 0) {
-    if (harq->round == 0) {
+    if (harq->round == 1) {
 
       if (stats->dl.errors == 0) {
         LOG_A(NR_MAC, "(UE RNTI 0x%04x) Received Ack of RA-Msg4. CBRA procedure succeeded!\n", ra->rnti);
         UE->Msg4_ACKed = true;
         UE->ra_timer = 0;
+
+        LOG_A(NR_MAC," \nInference sentence : this message will send dowmlink information\n");
+
+        //LOG_A("\nINFO  -->  NR_MAC : Encoder  \n");
+
+        Py_Initialize();
+        PyObject *input = Py_BuildValue("s", "/home/eric/server/SemanticRL/Evaluation/Inference_Given_Input_8_16_Q_encoder.py");
+        FILE *inputdata = _Py_fopen_obj(input, "r+");
+        if(inputdata != NULL) {
+        PyRun_SimpleFile(inputdata, "/home/eric/server/SemanticRL/Evaluation/Inference_Given_Input_8_16_Q_encoder.py");
+        }
+
 
         // Pause scheduling according to:
         // 3GPP TS 38.331 Section 12 Table 12.1-1: UE performance requirements for RRC procedures for UEs
